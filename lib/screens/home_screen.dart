@@ -121,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: TextField(
                               controller: _searchController,
                               decoration: const InputDecoration(
-                                hintText: 'Buscar tarea... 🔍',
+                                hintText: 'Buscar tarea... ',
                                 border: InputBorder.none,
                                 icon: Icon(
                                   Icons.search,

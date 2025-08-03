@@ -7,24 +7,24 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:todo_app/main.dart';
+import 'package:ada_tareas/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('Test de la aplicación Ada Tareas', (WidgetTester tester) async {
+    // Construir la app y disparar un frame
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verificar que existe el título de la app
+    expect(find.text('Ada Tareas'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
+    // Verificar que existe el botón de agregar tarea
+    expect(find.byIcon(Icons.add), findsOneWidget);
+
+    // Tap en el botón de agregar y esperar la navegación
     await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verificar que estamos en la pantalla de agregar tarea
+    expect(find.text('Creando nueva tarea Mi vida❤️'), findsOneWidget);
   });
 }

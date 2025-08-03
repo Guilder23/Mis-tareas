@@ -139,6 +139,12 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                               filled: true,
                               fillColor: Colors.white,
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor ingresa un título para tu tarea, cariño 💕';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
@@ -167,6 +173,12 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                               filled: true,
                               fillColor: Colors.white,
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor ingresa una descripción, Ñam Ñam 💝';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 20),
                           InkWell(
@@ -208,7 +220,7 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    'Fecha Límite: ${DateFormat('dd/MM/yyyy').format(_dueDate)} 📅',
+                                    'Fecha Límite: ${DateFormat('dd/MM/yyyy').format(_dueDate)} ',
                                     style: const TextStyle(
                                       fontSize: 16,
                                       color: Color(0xFFAD1457),
@@ -318,21 +330,57 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
 
   Future<void> _saveTask() async {
     if (_formKey.currentState!.validate()) {
-      final task = Task(
-        id: widget.task?.id,
-        title: _titleController.text,
-        description: _descriptionController.text,
-        dueDate: _dueDate,
-        status: _status,
-      );
+      try {
+        final task = Task(
+          id: widget.task?.id,
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim(),
+          dueDate: _dueDate,
+          status: _status,
+        );
 
-      if (widget.task == null) {
-        await DatabaseHelper().insertTask(task);
-      } else {
-        await DatabaseHelper().updateTask(task);
+        if (widget.task == null) {
+          await DatabaseHelper().insertTask(task);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('¡Tarea creada con éxito, mi niña! Muaaa💖'),
+              backgroundColor: Color(0xFFE91E63),
+            ),
+          );
+        } else {
+          await DatabaseHelper().updateTask(task);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('¡Tarea actualizada con éxito, cariño! 💕'),
+              backgroundColor: Color(0xFFE91E63),
+            ),
+          );
+        }
+
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Ups, algo salió mal mi vida. ¿Podrías intentarlo de nuevo? 🥺',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
-
-      Navigator.pop(context);
+    } else {
+      // Mostrar mensaje de error si hay campos vacíos
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor completa todos los campos, mi vida 💝'),
+          backgroundColor: Color(0xFFAD1457),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        ),
+      );
     }
   }
 }

@@ -58,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 delay: const Duration(milliseconds: 500),
                 duration: const Duration(milliseconds: 800),
                 child: const Text(
-                  "¡Bienvenida a tus tareas Mi Adelayda! 💖",
+                  "¡Bienvenida a tus tareas Mi Adelayda! 😊💖",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 28,
