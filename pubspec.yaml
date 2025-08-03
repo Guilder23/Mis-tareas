@@ -1,5 +1,5 @@
-name: todo_app
-description: "A new Flutter project."
+name: ada_tareas
+description: "Aplicación de tareas personalizada para Ada"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -37,6 +37,15 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFADE1"
+  adaptive_icon_foreground: "assets/images/logo.png"
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -47,6 +56,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/images/logo.png
     - assets/images/juntos.jpg
    
 
