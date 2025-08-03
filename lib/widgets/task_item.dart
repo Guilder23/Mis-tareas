@@ -44,6 +44,7 @@ class TaskItem extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: Color(0xFFAD1457),
                         ),
                       ),
                     ),
@@ -53,7 +54,7 @@ class TaskItem extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   task.description,
-                  style: const TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Colors.grey[700]),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -63,8 +64,8 @@ class TaskItem extends StatelessWidget {
                       size: 16,
                       color:
                           task.dueDate.isBefore(DateTime.now())
-                              ? Colors.red
-                              : Colors.green,
+                              ? const Color(0xFFE91E63)
+                              : const Color(0xFFAD1457),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -72,8 +73,8 @@ class TaskItem extends StatelessWidget {
                       style: TextStyle(
                         color:
                             task.dueDate.isBefore(DateTime.now())
-                                ? Colors.red
-                                : Colors.black,
+                                ? const Color(0xFFE91E63)
+                                : const Color(0xFFAD1457),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -83,7 +84,7 @@ class TaskItem extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(
+                    TextButton.icon(
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -92,15 +93,27 @@ class TaskItem extends StatelessWidget {
                           ),
                         ).then((value) => onTaskUpdated());
                       },
-                      child: const Text("Editar"),
+                      icon: const Icon(
+                        Icons.edit,
+                        color: Color(0xFFAD1457),
+                        size: 20,
+                      ),
+                      label: const Text(
+                        "Editar",
+                        style: TextStyle(color: Color.fromARGB(255, 231, 93, 149)),
+                      ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        _showDeleteConfirmation(context);
-                      },
-                      child: const Text(
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      onPressed: () => _showDeleteConfirmation(context),
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: Color(0xFFE91E63),
+                        size: 20,
+                      ),
+                      label: const Text(
                         "Eliminar",
-                        style: TextStyle(color: Colors.red),
+                        style: TextStyle(color: Color(0xFFE91E63)),
                       ),
                     ),
                   ],
@@ -121,33 +134,57 @@ class TaskItem extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          title: const Text('Confirmar eliminación'),
-          content: const Text(
-            ' Ups ¿Cariño estás seguro de que deseas eliminar esta tarea?',
+          title: const Text(
+            '¿Eliminar tarea? 🥺',
+            style: TextStyle(
+              color: Color(0xFFAD1457),
+              fontWeight: FontWeight.bold,
+            ),
           ),
+          content: const Text(
+            '¿Estás segura de que quieres eliminar esta tarea, cariño? Esta acción no se puede deshacer.',
+            style: TextStyle(color: Colors.grey),
+          ),
+          backgroundColor: Colors.white,
+          elevation: 4,
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text(
-                'Cancelar 🥺',
-                style: TextStyle(color: Colors.grey),
+                'Cancelar 💕',
+                style: TextStyle(color: Color(0xFFAD1457)),
               ),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE91E63), Color(0xFFAD1457)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () async {
+                  await DatabaseHelper().deleteTask(task.id!);
+                  Navigator.pop(context);
+                  onTaskUpdated();
+                },
+                child: const Text(
+                  'Eliminar 🗑️',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              onPressed: () async {
-                await DatabaseHelper().deleteTask(task.id!);
-                Navigator.pop(context);
-                onTaskUpdated();
-              },
-              child: const Text('Eliminar 😊'),
             ),
           ],
         );

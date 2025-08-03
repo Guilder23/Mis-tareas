@@ -15,19 +15,55 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
+  List<Task> filteredTasks = [];
   bool isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
+  TaskStatus? statusFilter;
+  bool isAscending = true;
 
   @override
   void initState() {
     super.initState();
     _loadTasks();
+    _searchController.addListener(_filterTasks);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterTasks() {
+    setState(() {
+      filteredTasks =
+          tasks.where((task) {
+            final searchMatch =
+                task.title.toLowerCase().contains(
+                  _searchController.text.toLowerCase(),
+                ) ||
+                task.description.toLowerCase().contains(
+                  _searchController.text.toLowerCase(),
+                );
+            final statusMatch =
+                statusFilter == null || task.status == statusFilter;
+            return searchMatch && statusMatch;
+          }).toList();
+
+      if (isAscending) {
+        filteredTasks.sort((a, b) => a.dueDate.compareTo(b.dueDate));
+      } else {
+        filteredTasks.sort((a, b) => b.dueDate.compareTo(a.dueDate));
+      }
+    });
   }
 
   Future<void> _loadTasks() async {
-    final tasks = await DatabaseHelper().getTasks();
+    final loadedTasks = await DatabaseHelper().getTasks();
     setState(() {
-      this.tasks = tasks;
+      tasks = loadedTasks;
       isLoading = false;
+      _filterTasks();
     });
   }
 
@@ -57,59 +93,190 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFCE4EC), // Rosa muy claro
-              Colors.white,
-            ],
-          ),
-        ),
-        child:
-            isLoading
-                ? const Center(
-                  child: CircularProgressIndicator(color: Color(0xFFE91E63)),
-                )
-                : tasks.isEmpty
-                ? FadeInLeft(
-                  duration: const Duration(milliseconds: 800),
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.task_alt,
-                          size: 80,
-                          color: Color(0xFFE91E63),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'No tienes tareas aún Mi ada 💝',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Color(0xFFAD1457),
-                            fontWeight: FontWeight.w500,
+      body: Column(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFE91E63), Color(0xFFAD1457)],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  // Barra de búsqueda y filtros
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: const InputDecoration(
+                                hintText: 'Buscar tarea... 🔍',
+                                border: InputBorder.none,
+                                icon: Icon(
+                                  Icons.search,
+                                  color: Color(0xFFE91E63),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                          // Filtro de estado
+                          PopupMenuButton<TaskStatus?>(
+                            icon: const Icon(
+                              Icons.filter_list,
+                              color: Color(0xFFE91E63),
+                            ),
+                            tooltip: 'Filtrar por estado',
+                            onSelected: (TaskStatus? status) {
+                              setState(() {
+                                statusFilter = status;
+                                _filterTasks();
+                              });
+                            },
+                            itemBuilder:
+                                (BuildContext context) => [
+                                  const PopupMenuItem(
+                                    value: null,
+                                    child: Text('Todos 📝'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: TaskStatus.pending,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.schedule,
+                                          color: Color(0xFFE91E63),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text('Pendiente'),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: TaskStatus.inProgress,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.pending,
+                                          color: Color(0xFFE91E63),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text('En Ejecución'),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: TaskStatus.completed,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.check_circle,
+                                          color: Color(0xFFE91E63),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text('Terminado'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                          ),
+                          // Filtro de orden
+                          IconButton(
+                            icon: Icon(
+                              isAscending
+                                  ? Icons.arrow_upward
+                                  : Icons.arrow_downward,
+                              color: Color(0xFFE91E63),
+                            ),
+                            tooltip: 'Ordenar por fecha',
+                            onPressed: () {
+                              setState(() {
+                                isAscending = !isAscending;
+                                _filterTasks();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                )
-                : RefreshIndicator(
-                  color: Color(0xFFE91E63),
-                  onRefresh: _loadTasks,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 100),
-                    itemCount: tasks.length,
-                    itemBuilder: (context, index) {
-                      final task = tasks[index];
-                      return TaskItem(task: task, onTaskUpdated: _refreshTasks);
-                    },
-                  ),
+                ],
+              ),
+            ),
+          ),
+          // Lista de tareas
+          Expanded(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFFFCE4EC), // Rosa muy claro
+                    Colors.white,
+                  ],
                 ),
+              ),
+              child:
+                  isLoading
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFE91E63),
+                        ),
+                      )
+                      : filteredTasks.isEmpty
+                      ? FadeInLeft(
+                        duration: const Duration(milliseconds: 800),
+                        child: const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.task_alt,
+                                size: 80,
+                                color: Color(0xFFE91E63),
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'No se encontraron tareas 💝',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Color(0xFFAD1457),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                      : RefreshIndicator(
+                        color: const Color(0xFFE91E63),
+                        onRefresh: _loadTasks,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 100),
+                          itemCount: filteredTasks.length,
+                          itemBuilder: (context, index) {
+                            final task = filteredTasks[index];
+                            return TaskItem(
+                              task: task,
+                              onTaskUpdated: _refreshTasks,
+                            );
+                          },
+                        ),
+                      ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: Container(
         decoration: BoxDecoration(
